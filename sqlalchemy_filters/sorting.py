@@ -37,14 +37,11 @@ class Sort(object):
             return {self.sort_spec['model']}
         return set()
 
-    def format_for_sqlalchemy(self, query, default_model):
-        sort_spec = self.sort_spec
+    def format_for_sqlalchemy(self, table):
         direction = self.direction
         field_name = self.field_name
 
-        model = get_model_from_spec(sort_spec, query, default_model)
-
-        field = Field(model, field_name)
+        field = Field(table, field_name)
         sqlalchemy_field = field.get_sqlalchemy_field()
 
         if direction == SORT_ASCENDING:
@@ -67,7 +64,7 @@ def get_named_models(sorts):
     return models
 
 
-def apply_sort(query, sort_spec):
+def apply_sort(query, sort_spec, table):
     """Apply sorting to a :class:`sqlalchemy.orm.Query` instance.
 
     :param sort_spec:
@@ -105,13 +102,8 @@ def apply_sort(query, sort_spec):
 
     sorts = [Sort(item) for item in sort_spec]
 
-    default_model = get_default_model(query)
-
-    sort_models = get_named_models(sorts)
-    query = auto_join(query, *sort_models)
-
     sqlalchemy_sorts = [
-        sort.format_for_sqlalchemy(query, default_model) for sort in sorts
+        sort.format_for_sqlalchemy(table) for sort in sorts
     ]
 
     if sqlalchemy_sorts:
