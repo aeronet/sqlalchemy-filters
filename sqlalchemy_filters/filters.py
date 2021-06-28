@@ -127,9 +127,9 @@ class BooleanFilter(object):
             models.update(filter.get_named_models())
         return models
 
-    def format_for_sqlalchemy(self, query, default_model):
+    def format_for_sqlalchemy(self, default_model):
         return self.function(*[
-            filter.format_for_sqlalchemy(query, default_model)
+            filter.format_for_sqlalchemy(default_model)
             for filter in self.filters
         ])
 
