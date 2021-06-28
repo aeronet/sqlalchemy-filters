@@ -12,13 +12,16 @@ class Field(object):
         self.field_name = field_name
 
     def get_sqlalchemy_field(self):
-        if self.field_name not in self.table.c:
-            raise FieldNotFound(
-                'Table {} has no column `{}`.'.format(
-                    self.table, self.field_name
+        if type(self.field_name) is str:
+            if self.field_name not in self.table.c:
+                raise FieldNotFound(
+                    'Table {} has no column `{}`.'.format(
+                        self.table, self.field_name
+                    )
                 )
-            )
-        sqlalchemy_field = getattr(self.table.c, self.field_name)
+            sqlalchemy_field = getattr(self.table.c, self.field_name)
+        else:
+            sqlalchemy_field = self.field_name
 
         # If it's a hybrid method, then we call it so that we can work with
         # the result of the execution and not with the method object itself
