@@ -97,18 +97,15 @@ class Filter(object):
             return {self.filter_spec['model']}
         return set()
 
-    def format_for_sqlalchemy(self, query, default_model):
-        filter_spec = self.filter_spec
+    def format_for_sqlalchemy(self, table):
         operator = self.operator
         value = self.value
-
-        model = get_model_from_spec(filter_spec, query, default_model)
 
         function = operator.function
         arity = operator.arity
 
         field_name = self.filter_spec['field']
-        field = Field(model, field_name)
+        field = Field(table, field_name)
         sqlalchemy_field = field.get_sqlalchemy_field()
 
         if arity == 1:
@@ -195,7 +192,7 @@ def get_named_models(filters):
     return models
 
 
-def apply_filters(query, filter_spec, do_auto_join=True):
+def apply_filters(query, filter_spec, table):
     """Apply filters to a SQLAlchemy query.
 
     :param query:
@@ -232,14 +229,8 @@ def apply_filters(query, filter_spec, do_auto_join=True):
     """
     filters = build_filters(filter_spec)
 
-    default_model = get_default_model(query)
-
-    filter_models = get_named_models(filters)
-    if do_auto_join:
-        query = auto_join(query, *filter_models)
-
     sqlalchemy_filters = [
-        filter.format_for_sqlalchemy(query, default_model)
+        filter.format_for_sqlalchemy(table)
         for filter in filters
     ]
 
