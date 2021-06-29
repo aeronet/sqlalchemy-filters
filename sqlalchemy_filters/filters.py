@@ -8,7 +8,7 @@ from six import string_types
 from sqlalchemy import and_, or_, not_, func
 
 from .exceptions import BadFilterFormat, FieldNotFound, FilterFieldNotFound
-from .models import Field
+from .models import Field, get_table
 
 
 BooleanFunction = namedtuple(
@@ -82,12 +82,14 @@ class Filter(object):
         if not value_present and self.operator.arity == 2:
             raise BadFilterFormat('`value` must be provided.')
 
-    def format_for_sqlalchemy(self, table):
+    def format_for_sqlalchemy(self, query):
         operator = self.operator
         value = self.value
 
         function = operator.function
         arity = operator.arity
+
+        table = get_table(query)
 
         field_name = self.filter_spec['field']
         field = Field(table, field_name)
@@ -167,7 +169,7 @@ def build_filters(filter_spec):
     return [Filter(filter_spec)]
 
 
-def apply_filters(query, filter_spec, table):
+def apply_filters(query, filter_spec):
     """Apply filters to a SQLAlchemy query.
 
     :param query:
@@ -205,7 +207,7 @@ def apply_filters(query, filter_spec, table):
     filters = build_filters(filter_spec)
 
     sqlalchemy_filters = [
-        filter.format_for_sqlalchemy(table)
+        filter.format_for_sqlalchemy(query)
         for filter in filters
     ]
 

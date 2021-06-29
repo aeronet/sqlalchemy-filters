@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from .exceptions import BadSortFormat, FieldNotFound, SortFieldNotFound
-from .models import Field
+from .models import Field, get_table
 
 SORT_ASCENDING = 'asc'
 SORT_DESCENDING = 'desc'
@@ -32,9 +32,10 @@ class Sort(object):
         self.nullsfirst = sort_spec.get('nullsfirst')
         self.nullslast = sort_spec.get('nullslast')
 
-    def format_for_sqlalchemy(self, table):
+    def format_for_sqlalchemy(self, query):
         direction = self.direction
         field_name = self.field_name
+        table = get_table(query)
 
         field = Field(table, field_name)
         try:
@@ -55,7 +56,7 @@ class Sort(object):
             return sort_fnc()
 
 
-def apply_sort(query, sort_spec, table):
+def apply_sort(query, sort_spec):
     """Apply sorting to a :class:`sqlalchemy.sql.selectable.Select` instance.
 
     :param sort_spec:
@@ -93,7 +94,7 @@ def apply_sort(query, sort_spec, table):
 
     sorts = [Sort(item) for item in sort_spec]
 
-    sqlalchemy_sorts = [sort.format_for_sqlalchemy(table) for sort in sorts]
+    sqlalchemy_sorts = [sort.format_for_sqlalchemy(query) for sort in sorts]
 
     if sqlalchemy_sorts:
         query = query.order_by(*sqlalchemy_sorts)
