@@ -17,7 +17,7 @@ from itertools import chain
 from six import string_types
 from sqlalchemy import and_, or_, not_, func
 
-from .exceptions import BadFilterFormat
+from .exceptions import BadFilterFormat, FieldNotFound, FilterFieldNotFound
 from .models import Field, auto_join, get_model_from_spec, get_default_model
 
 
@@ -106,7 +106,10 @@ class Filter(object):
 
         field_name = self.filter_spec['field']
         field = Field(table, field_name)
-        sqlalchemy_field = field.get_sqlalchemy_field()
+        try:
+            sqlalchemy_field = field.get_sqlalchemy_field()
+        except FieldNotFound as e:
+            raise FilterFieldNotFound(e)
 
         if arity == 1:
             return function(sqlalchemy_field)

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from .exceptions import BadSortFormat
+from .exceptions import BadSortFormat, FieldNotFound, SortFieldNotFound
 from .models import Field, auto_join, get_model_from_spec, get_default_model
 
 SORT_ASCENDING = 'asc'
@@ -42,7 +42,10 @@ class Sort(object):
         field_name = self.field_name
 
         field = Field(table, field_name)
-        sqlalchemy_field = field.get_sqlalchemy_field()
+        try:
+            sqlalchemy_field = field.get_sqlalchemy_field()
+        except FieldNotFound as e:
+            raise SortFieldNotFound(e)
 
         if direction == SORT_ASCENDING:
             sort_fnc = sqlalchemy_field.asc

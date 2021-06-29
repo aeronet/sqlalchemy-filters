@@ -21,6 +21,14 @@ class FieldNotFound(Exception):
     pass
 
 
+class FilterFieldNotFound(FieldNotFound):
+    pass
+
+
+class SortFieldNotFound(FieldNotFound):
+    pass
+
+
 class BadQuery(Exception):
     pass
 
