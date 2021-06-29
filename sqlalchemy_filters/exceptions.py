@@ -9,14 +9,6 @@ class BadSortFormat(Exception):
     pass
 
 
-class BadLoadFormat(Exception):
-    pass
-
-
-class BadSpec(Exception):
-    pass
-
-
 class FieldNotFound(Exception):
     pass
 
@@ -26,10 +18,6 @@ class FilterFieldNotFound(FieldNotFound):
 
 
 class SortFieldNotFound(FieldNotFound):
-    pass
-
-
-class BadQuery(Exception):
     pass
 
 

@@ -85,7 +85,7 @@ def _offset(query, page_number, page_size):
     return query
 
 
-def _calculate_num_pages(page_number, page_size, total_results):
+def _calculate_num_pages(page_size, total_results):
     if page_size == 0:
         return 0
 

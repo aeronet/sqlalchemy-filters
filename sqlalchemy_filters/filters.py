@@ -1,24 +1,14 @@
 # -*- coding: utf-8 -*-
 from collections import namedtuple
-try:
-    from collections.abc import Iterable
-except ImportError:  # pragma: no cover
-    # For python2 capability.
-    from collections import Iterable
-try:
-    from inspect import signature
-except ImportError:  # pragma: no cover
-    # For python2 capability. NOTE: This is in not handled in install_requires
-    # but rather in extras_require. You can install with
-    # 'pip install sqlalchemy-filters[python2]'
-    from funcsigs import signature
+from collections.abc import Iterable
+from inspect import signature
 from itertools import chain
 
 from six import string_types
 from sqlalchemy import and_, or_, not_, func
 
 from .exceptions import BadFilterFormat, FieldNotFound, FilterFieldNotFound
-from .models import Field, auto_join, get_model_from_spec, get_default_model
+from .models import Field
 
 
 BooleanFunction = namedtuple(
@@ -92,11 +82,6 @@ class Filter(object):
         if not value_present and self.operator.arity == 2:
             raise BadFilterFormat('`value` must be provided.')
 
-    def get_named_models(self):
-        if "model" in self.filter_spec:
-            return {self.filter_spec['model']}
-        return set()
-
     def format_for_sqlalchemy(self, table):
         operator = self.operator
         value = self.value
@@ -124,15 +109,9 @@ class BooleanFilter(object):
         self.function = function
         self.filters = filters
 
-    def get_named_models(self):
-        models = set()
-        for filter in self.filters:
-            models.update(filter.get_named_models())
-        return models
-
-    def format_for_sqlalchemy(self, default_model):
+    def format_for_sqlalchemy(self, table):
         return self.function(*[
-            filter.format_for_sqlalchemy(default_model)
+            filter.format_for_sqlalchemy(table)
             for filter in self.filters
         ])
 
@@ -141,8 +120,8 @@ def _is_iterable_filter(filter_spec):
     """ `filter_spec` may be a list of nested filter specs, or a dict.
     """
     return (
-        isinstance(filter_spec, Iterable) and
-        not isinstance(filter_spec, (string_types, dict))
+        isinstance(filter_spec, Iterable)
+        and not isinstance(filter_spec, (string_types, dict))
     )
 
 
@@ -186,13 +165,6 @@ def build_filters(filter_spec):
                 ]
 
     return [Filter(filter_spec)]
-
-
-def get_named_models(filters):
-    models = set()
-    for filter in filters:
-        models.update(filter.get_named_models())
-    return models
 
 
 def apply_filters(query, filter_spec, table):

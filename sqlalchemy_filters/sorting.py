@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from .exceptions import BadSortFormat, FieldNotFound, SortFieldNotFound
-from .models import Field, auto_join, get_model_from_spec, get_default_model
+from .models import Field
 
 SORT_ASCENDING = 'asc'
 SORT_DESCENDING = 'desc'
@@ -32,11 +32,6 @@ class Sort(object):
         self.nullsfirst = sort_spec.get('nullsfirst')
         self.nullslast = sort_spec.get('nullslast')
 
-    def get_named_models(self):
-        if "model" in self.sort_spec:
-            return {self.sort_spec['model']}
-        return set()
-
     def format_for_sqlalchemy(self, table):
         direction = self.direction
         field_name = self.field_name
@@ -58,13 +53,6 @@ class Sort(object):
             return sort_fnc().nullslast()
         else:
             return sort_fnc()
-
-
-def get_named_models(sorts):
-    models = set()
-    for sort in sorts:
-        models.update(sort.get_named_models())
-    return models
 
 
 def apply_sort(query, sort_spec, table):
@@ -105,9 +93,7 @@ def apply_sort(query, sort_spec, table):
 
     sorts = [Sort(item) for item in sort_spec]
 
-    sqlalchemy_sorts = [
-        sort.format_for_sqlalchemy(table) for sort in sorts
-    ]
+    sqlalchemy_sorts = [sort.format_for_sqlalchemy(table) for sort in sorts]
 
     if sqlalchemy_sorts:
         query = query.order_by(*sqlalchemy_sorts)
