@@ -6,7 +6,7 @@ from sqlalchemy_filters.exceptions import InvalidPage
 
 
 def apply_pagination(query, page_number=None, page_size=None):
-    """Apply pagination to a SQLAlchemy query object.
+    """Apply pagination to a SQLAlchemy query or select object.
 
     :param page_number:
         Page to be returned (starts and defaults to 1).
@@ -16,8 +16,8 @@ def apply_pagination(query, page_number=None, page_size=None):
         to the total results).
 
     :returns:
-        A 2-tuple with the paginated SQLAlchemy query object and
-        a pagination namedtuple.
+        A 2-tuple with the paginated SQLAlchemy query or seect object
+        and a pagination namedtuple.
 
         The pagination object contains information about the results
         and pages: ``page_size`` (defaults to ``total_results``),

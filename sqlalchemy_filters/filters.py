@@ -171,7 +171,7 @@ def apply_filters(query, filter_spec, table):
     """Apply filters to a SQLAlchemy query.
 
     :param query:
-        A :class:`sqlalchemy.orm.Query` instance.
+        A :class:`sqlalchemy.sql.selectable.Select` instance.
 
     :param filter_spec:
         A dict or an iterable of dicts, where each one includes
@@ -199,7 +199,7 @@ def apply_filters(query, filter_spec, table):
             }
 
     :returns:
-        The :class:`sqlalchemy.orm.Query` instance after all the filters
+        The :class:`sqlalchemy.sql.selectable.Select` instance after all the filters
         have been applied.
     """
     filters = build_filters(filter_spec)

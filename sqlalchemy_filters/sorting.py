@@ -56,7 +56,7 @@ class Sort(object):
 
 
 def apply_sort(query, sort_spec, table):
-    """Apply sorting to a :class:`sqlalchemy.orm.Query` instance.
+    """Apply sorting to a :class:`sqlalchemy.sql.selectable.Select` instance.
 
     :param sort_spec:
         A list of dictionaries, where each one of them includes
@@ -85,7 +85,7 @@ def apply_sort(query, sort_spec, table):
         may be omitted from the sort spec.
 
     :returns:
-        The :class:`sqlalchemy.orm.Query` instance after the provided
+        The :class:`sqlalchemy.sql.selectable.Select` instance after the provided
         sorting has been applied.
     """
     if isinstance(sort_spec, dict):
