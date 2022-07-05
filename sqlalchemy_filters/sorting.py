@@ -67,7 +67,7 @@ def get_named_models(sorts):
     return models
 
 
-def apply_sort(query, sort_spec):
+def apply_sort(query, sort_spec, do_auto_join=True, default_model=None):
     """Apply sorting to a :class:`sqlalchemy.orm.Query` instance.
 
     :param sort_spec:
@@ -96,6 +96,15 @@ def apply_sort(query, sort_spec):
         If the query being modified refers to a single model, the `model` key
         may be omitted from the sort spec.
 
+    :param default_model:
+        If supplied skips the call to get_default_model.  Helpful if the
+        query uses something like *Model.__table__.columns in its query.
+        This avoids Ambiguous spec errors and you can omit pass in the
+        `model` key.
+
+    :param do_auto_join:
+        Skips the call to auto_join
+
     :returns:
         The :class:`sqlalchemy.orm.Query` instance after the provided
         sorting has been applied.
@@ -105,10 +114,13 @@ def apply_sort(query, sort_spec):
 
     sorts = [Sort(item) for item in sort_spec]
 
-    default_model = get_default_model(query)
+    if default_model is None:
+        default_model = get_default_model(query)
 
     sort_models = get_named_models(sorts)
-    query = auto_join(query, *sort_models)
+
+    if do_auto_join:
+        query = auto_join(query, *sort_models)
 
     sqlalchemy_sorts = [
         sort.format_for_sqlalchemy(query, default_model) for sort in sorts
