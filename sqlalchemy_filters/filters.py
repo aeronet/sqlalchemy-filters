@@ -195,7 +195,7 @@ def get_named_models(filters):
     return models
 
 
-def apply_filters(query, filter_spec, do_auto_join=True):
+def apply_filters(query, filter_spec, do_auto_join=True, default_model=None):
     """Apply filters to a SQLAlchemy query.
 
     :param query:
@@ -232,7 +232,8 @@ def apply_filters(query, filter_spec, do_auto_join=True):
     """
     filters = build_filters(filter_spec)
 
-    default_model = get_default_model(query)
+    if default_model is None:
+        default_model = get_default_model(query)
 
     filter_models = get_named_models(filters)
     if do_auto_join:
