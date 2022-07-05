@@ -1,10 +1,15 @@
+import types
+import logging
+
 from sqlalchemy.exc import InvalidRequestError
 from sqlalchemy.inspection import inspect
+from sqlalchemy.orm import mapperlib
 from sqlalchemy.orm.mapper import Mapper
 from sqlalchemy.util import symbol
-import types
 
-from .exceptions import BadQuery, FieldNotFound, BadSpec
+from .exceptions import BadQuery, BadSpec, FieldNotFound
+
+logger = logging.getLogger(__name__)
 
 
 class Field(object):
@@ -51,6 +56,16 @@ def _is_hybrid_method(orm_descriptor):
     return orm_descriptor.extension_type == symbol('HYBRID_METHOD')
 
 
+def get_model_from_table(table):  # pragma: nocover
+    """Resolve model class from table object"""
+
+    for registry in mapperlib._all_registries():
+        for mapper in registry.mappers:
+            if table in mapper.tables:
+                return mapper.class_
+    return None
+
+
 def get_query_models(query):
     """Get models from query.
 
@@ -61,27 +76,26 @@ def get_query_models(query):
         A dictionary with all the models included in the query.
     """
     models = [col_desc['entity'] for col_desc in query.column_descriptions]
-    if hasattr(query, "_join_entities"):  # sqlalchemy<1.4
-        models.extend(mapper.class_ for mapper in query._join_entities)
-    else:  # sqlalchemy>=1.4
+    try:
         models.extend(
-            mapper.class_ for mapper in query._compile_state()._join_entities
+            mapper.class_
+            for mapper
+            in query._compile_state()._join_entities
         )
+    except (InvalidRequestError, AttributeError):
+        # query might not contain columns yet, hence cannot be compiled
+        # or query might be a sqla2.0 select statement
+        pass
+    # also try to infer the models from various internals
+    for table_tuple in query._setup_joins + query._legacy_setup_joins:
+        models.append(get_model_from_table(table_tuple[0]))
 
-    # account also query.select_from entities
-    if (
-        hasattr(query, '_select_from_entity') and
-        (query._select_from_entity is not None)
-    ):
-        model_class = (
-            query._select_from_entity.class_
-            if isinstance(query._select_from_entity, Mapper)  # sqlalchemy>=1.1
-            else query._select_from_entity  # sqlalchemy==1.0
-        )
-        if model_class not in models:
-            models.append(model_class)
+    if query._from_obj:
+        models.append(get_model_from_table(query._from_obj[0]))
 
-    return {model.__name__: model for model in models}
+    query_models = {model.__name__: model for model in models if model is not None}
+    logger.debug("Query models %", query_models)
+    return query_models
 
 
 def get_model_from_spec(spec, query, default_model=None):
