@@ -1,15 +1,11 @@
 import types
-import logging
 
 from sqlalchemy.exc import InvalidRequestError
 from sqlalchemy.inspection import inspect
 from sqlalchemy.orm import mapperlib
-from sqlalchemy.orm.mapper import Mapper
 from sqlalchemy.util import symbol
 
 from .exceptions import BadQuery, BadSpec, FieldNotFound
-
-logger = logging.getLogger(__name__)
 
 
 class Field(object):
@@ -94,7 +90,6 @@ def get_query_models(query):
         models.append(get_model_from_table(query._from_obj[0]))
 
     query_models = {model.__name__: model for model in models if model is not None}
-    logger.debug("Query models %", query_models)
     return query_models
 
 
