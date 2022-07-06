@@ -89,7 +89,8 @@ def get_query_models(query):
     if query._from_obj:
         models.append(get_model_from_table(query._from_obj[0]))
 
-    query_models = {model.__name__: model for model in models if model is not None}
+    query_models = {model.__name__: model for model in models
+                    if model is not None}
     return query_models
 
 
@@ -167,10 +168,7 @@ def auto_join(query, *model_names):
     # every model has access to the registry, so we can use any from the query
     query_models = get_query_models(query).values()
     model = list(query_models)[-1]
-    if hasattr(model, "_decl_class_registry"):  # sqlalchemy<1.4
-        model_registry = model._decl_class_registry
-    else:  # sqlalchemy>=1.4
-        model_registry = model.registry._class_registry
+    model_registry = model.registry._class_registry
 
     for name in model_names:
         model = get_model_class_by_name(model_registry, name)

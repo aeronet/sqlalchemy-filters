@@ -132,7 +132,7 @@ class TestGetModelClassByName:
 
     @pytest.fixture
     def registry(self):
-        return Base._decl_class_registry
+        return Base.registry._class_registry
 
     def test_exists(self, registry):
         assert get_model_class_by_name(registry, 'Foo') == Foo
