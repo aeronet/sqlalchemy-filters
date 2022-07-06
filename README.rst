@@ -6,18 +6,8 @@ SQLAlchemy filters
     Filter, sort and paginate SQLAlchemy query objects. Ideal for
     exposing these actions over a REST API.
 
-
-.. image:: https://img.shields.io/pypi/v/sqlalchemy-filters.svg
-    :target: https://pypi.org/project/sqlalchemy-filters/
-
-.. image:: https://img.shields.io/pypi/pyversions/sqlalchemy-filters.svg
-    :target: https://pypi.org/project/sqlalchemy-filters/
-
-.. image:: https://img.shields.io/pypi/format/sqlalchemy-filters.svg
-    :target: https://pypi.org/project/sqlalchemy-filters/
-
-.. image:: https://travis-ci.org/juliotrigo/sqlalchemy-filters.svg?branch=master
-    :target: https://travis-ci.org/juliotrigo/sqlalchemy-filters
+.. image:: https://app.travis-ci.com/aeronet/sqlalchemy-filters.svg?branch=master
+    :target: https://app.travis-ci.com/aeronet/sqlalchemy-filters
 
 
 Filtering
@@ -487,36 +477,26 @@ The following RDBMS are supported (tested):
 - PostgreSQL
 
 
-Python 2
---------
-
-There is no active support for Python 2. However, it is compatible as of
-February 2019, if you install ``funcsigs``, included in the ``python2``
-extra requirements.
-
-
 SQLAlchemy support
 ------------------
 
-The following SQLAlchemy_ versions are supported: ``1.0``, ``1.1``,
-``1.2``, ``1.3``.
-
+The following SQLAlchemy_ versions are supported: ``1.4``
 
 Changelog
 ---------
 
-Consult the `CHANGELOG <https://github.com/juliotrigo/sqlalchemy-filters/blob/master/CHANGELOG.rst>`_
+Consult the `CHANGELOG <https://github.com/aeronet/sqlalchemy-filters/blob/master/CHANGELOG.rst>`_
 document for fixes and enhancements of each version.
 
 
 License
 -------
 
-Apache 2.0. See `LICENSE <https://github.com/juliotrigo/sqlalchemy-filters/blob/master/LICENSE>`_
+Apache 2.0. See `LICENSE <https://github.com/aeronet/sqlalchemy-filters/blob/master/LICENSE>`_
 for details.
 
 
 .. _SQLAlchemy: https://www.sqlalchemy.org/
-.. _hybrid attribute: https://docs.sqlalchemy.org/en/13/orm/extensions/hybrid.html
-.. _hybrid property: https://docs.sqlalchemy.org/en/13/orm/extensions/hybrid.html#sqlalchemy.ext.hybrid.hybrid_property
-.. _hybrid method: https://docs.sqlalchemy.org/en/13/orm/extensions/hybrid.html#sqlalchemy.ext.hybrid.hybrid_method
+.. _hybrid attribute: https://docs.sqlalchemy.org/en/latest/orm/extensions/hybrid.html
+.. _hybrid property: https://docs.sqlalchemy.org/en/latest/orm/extensions/hybrid.html#sqlalchemy.ext.hybrid.hybrid_property
+.. _hybrid method: https://docs.sqlalchemy.org/en/latest/orm/extensions/hybrid.html#sqlalchemy.ext.hybrid.hybrid_method
