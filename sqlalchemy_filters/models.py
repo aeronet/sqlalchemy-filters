@@ -119,11 +119,17 @@ def get_model_from_spec(spec, query, default_model=None):
 
     """
     models = get_query_models(query)
-    if not models:
+    if not models and default_model is None:
         raise BadQuery('The query does not contain any models.')
 
     model_name = spec.get('model')
     if model_name is not None:
+        try:
+            if model_name == default_model.__name__:
+                return default_model
+        except AttributeError:
+            pass
+
         models = [v for (k, v) in models.items() if k == model_name]
         if not models:
             raise BadSpec(
