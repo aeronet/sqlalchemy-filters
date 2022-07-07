@@ -137,12 +137,22 @@ def get_model_from_spec(spec, query, default_model=None):
             )
         model = models[0]
     else:
+        logger.debug("No spec model supplied")
         if len(models) == 1:
             model = list(models.values())[0]
+            logger.debug(f"Only one model: {model}")
         elif default_model is not None:
+            logger.debug("Using default model")
             return default_model
         else:
-            raise BadSpec("Ambiguous spec. Please specify a model.")
+            logger.debug("Searching for field in query models")
+            for m in models.values():
+                if hasattr(m, spec["field"]):
+                    logger.debug(f"Using {m}")
+                    model = m
+                    break
+            else:
+                raise BadSpec("Ambiguous spec. Please specify a model.")
 
     return model
 
