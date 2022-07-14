@@ -1,10 +1,14 @@
-from sqlalchemy.exc import InvalidRequestError
-from sqlalchemy.inspection import inspect
-from sqlalchemy.orm.mapper import Mapper
-from sqlalchemy.util import symbol
+import logging
 import types
 
-from .exceptions import BadQuery, FieldNotFound, BadSpec
+from sqlalchemy.exc import InvalidRequestError
+from sqlalchemy.inspection import inspect
+from sqlalchemy.orm import mapperlib
+from sqlalchemy.util import symbol
+
+from .exceptions import BadQuery, BadSpec, FieldNotFound
+
+logger = logging.getLogger(__name__)
 
 
 class Field(object):
@@ -51,6 +55,16 @@ def _is_hybrid_method(orm_descriptor):
     return orm_descriptor.extension_type == symbol('HYBRID_METHOD')
 
 
+def get_model_from_table(table):  # pragma: nocover
+    """Resolve model class from table object"""
+
+    for registry in mapperlib._all_registries():
+        for mapper in registry.mappers:
+            if table in mapper.tables:
+                return mapper.class_
+    return None
+
+
 def get_query_models(query):
     """Get models from query.
 
@@ -61,27 +75,25 @@ def get_query_models(query):
         A dictionary with all the models included in the query.
     """
     models = [col_desc['entity'] for col_desc in query.column_descriptions]
-    if hasattr(query, "_join_entities"):  # sqlalchemy<1.4
-        models.extend(mapper.class_ for mapper in query._join_entities)
-    else:  # sqlalchemy>=1.4
+
+    try:
         models.extend(
-            mapper.class_ for mapper in query._compile_state()._join_entities
+            mapper.class_
+            for mapper
+            in query._compile_state()._join_entities
         )
+    except (InvalidRequestError, AttributeError):
+        # query might not contain columns yet, hence cannot be compiled
+        # or query might be a sqla2.0 select statement
+        pass
 
-    # account also query.select_from entities
-    if (
-        hasattr(query, '_select_from_entity') and
-        (query._select_from_entity is not None)
-    ):
-        model_class = (
-            query._select_from_entity.class_
-            if isinstance(query._select_from_entity, Mapper)  # sqlalchemy>=1.1
-            else query._select_from_entity  # sqlalchemy==1.0
-        )
-        if model_class not in models:
-            models.append(model_class)
+    if query._from_obj:
+        models.append(get_model_from_table(query._from_obj[0]))
 
-    return {model.__name__: model for model in models}
+    query_models = {model.__name__: model for model in models
+                    if model is not None}
+    logger.debug(f"Query models: {query_models}")
+    return query_models
 
 
 def get_model_from_spec(spec, query, default_model=None):
@@ -109,11 +121,15 @@ def get_model_from_spec(spec, query, default_model=None):
 
     """
     models = get_query_models(query)
-    if not models:
+    if not models and default_model is None:
         raise BadQuery('The query does not contain any models.')
+
+    if default_model is not None:
+        models[default_model.__name__] = default_model
 
     model_name = spec.get('model')
     if model_name is not None:
+        logger.debug(f"Spec model: {model_name}")
         models = [v for (k, v) in models.items() if k == model_name]
         if not models:
             raise BadSpec(
@@ -121,12 +137,22 @@ def get_model_from_spec(spec, query, default_model=None):
             )
         model = models[0]
     else:
+        logger.debug("No spec model supplied")
         if len(models) == 1:
             model = list(models.values())[0]
+            logger.debug(f"Only one model: {model}")
         elif default_model is not None:
+            logger.debug("Using default model")
             return default_model
         else:
-            raise BadSpec("Ambiguous spec. Please specify a model.")
+            logger.debug("Searching for field in query models")
+            for m in models.values():
+                if hasattr(m, spec["field"]):
+                    logger.debug(f"Using {m}")
+                    model = m
+                    break
+            else:
+                raise BadSpec("Ambiguous spec. Please specify a model.")
 
     return model
 
@@ -158,10 +184,7 @@ def auto_join(query, *model_names):
     # every model has access to the registry, so we can use any from the query
     query_models = get_query_models(query).values()
     model = list(query_models)[-1]
-    if hasattr(model, "_decl_class_registry"):  # sqlalchemy<1.4
-        model_registry = model._decl_class_registry
-    else:  # sqlalchemy>=1.4
-        model_registry = model.registry._class_registry
+    model_registry = model.registry._class_registry
 
     for name in model_names:
         model = get_model_class_by_name(model_registry, name)
