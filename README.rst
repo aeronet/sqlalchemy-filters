@@ -310,18 +310,18 @@ provided ``value`` (optional, depending on the operator).
 
 This is the list of operators that can be used:
 
-- ``is_null``
-- ``is_not_null``
-- ``==``, ``eq``
-- ``!=``, ``ne``
-- ``>``, ``gt``
-- ``<``, ``lt``
-- ``>=``, ``ge``
-- ``<=``, ``le``
+- ``is_null``, ``isEmpty``
+- ``is_not_null``, ``isNotEmpty``
+- ``=``, ``==``, ``eq``, ``equals``, ``is``
+- ``!=``, ``ne``, ``not``
+- ``>``, ``gt``, ``after``
+- ``<``, ``lt``, ``before``
+- ``>=``, ``ge``, ``gte``, ``onOrAfter``
+- ``<=``, ``le``, ``lte``, ``onOrBefore``
 - ``like``
 - ``ilike``
 - ``not_ilike``
-- ``in``
+- ``in``, ``isAnyOf``
 - ``not_in``
 - ``any``
 - ``not_any``
